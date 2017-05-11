@@ -1,47 +1,24 @@
-package com.example.melodic.higherorlower;
+package com.example.melodic.sounddemo;
 
+import android.media.MediaPlayer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.Toast;
-
-import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
+    MediaPlayer mediaPlayer;
 
-    int randomNumber;
+    public void playAudio(View view){
+        mediaPlayer.start();
+    }
 
-    public void checkGuess(View view){
+    public void pauseAudio(View view){
+        mediaPlayer.pause();
+    }
 
-        EditText guessedNumber = (EditText) findViewById(R.id.editNumber);
-        if(!(guessedNumber.getText().toString().isEmpty())){
-
-        String guessedNumberString = guessedNumber.getText().toString();
-
-        int guessedNumberInt = Integer.parseInt(guessedNumberString);
-        String message = "";
-
-        if (guessedNumberInt == (int)guessedNumberInt) {
-
-            if (guessedNumberInt > randomNumber) {
-                message = "High!";
-            } else if (guessedNumberInt < randomNumber) {
-                message = "Low";
-            } else if (guessedNumberInt == randomNumber) {
-                message = "Correct";
-            } else {
-                message = "No number was given!";
-            }
-            System.out.println("Random Number: " + randomNumber);
-            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-
-        } else{
-            Toast.makeText(getApplicationContext(), "Not a number", Toast.LENGTH_LONG).show();
-        }
-        } else {
-            Toast.makeText(getApplicationContext(), "You did not type!", Toast.LENGTH_LONG).show();
-        }
+    public void stopAudio(View view){
+        mediaPlayer.stop();
+         mediaPlayer.prepareAsync();
     }
 
     @Override
@@ -49,7 +26,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Random randomGenerator  = new Random();
-        randomNumber = randomGenerator.nextInt(21);
+        mediaPlayer = MediaPlayer.create(this, R.raw.dukkho);
     }
 }
