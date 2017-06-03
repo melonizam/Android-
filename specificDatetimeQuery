@@ -1,0 +1,123 @@
+package com.expense.nizam.nizamsexpenseapp;
+
+/**
+ * Created by anupamchugh on 19/10/15.
+ */
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.SQLException;
+import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+import android.widget.CalendarView;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class DBManager {
+
+    private DatabaseHelper dbHelper;
+
+    private Context context;
+
+    public SQLiteDatabase database;
+    public CalendarView cvDay = null;
+
+    public DBManager(Context c) {
+        context = c;
+    }
+
+    public DBManager open() throws SQLException {
+        dbHelper = new DatabaseHelper(context);
+        database = dbHelper.getWritableDatabase();
+        return this;
+    }
+
+    public void close() {
+        dbHelper.close();
+    }
+
+    private String getNow(){
+        // set the format to sql date time
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date();
+        return dateFormat.format(date);
+    }
+
+    private String getTodaysDate(String formatted){
+        // set the format to sql date time
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd" + formatted);
+        Date date = new Date();
+        return dateFormat.format(date);
+    }
+
+
+    public void insert(String material, String cost) {
+        ContentValues contentValue = new ContentValues();
+        contentValue.put(DatabaseHelper.MATERIAL, material);
+        contentValue.put(DatabaseHelper.COST, cost);
+
+
+        //how to insert datetime now in db
+        contentValue.put(DatabaseHelper.CREATED_AT, getNow());
+        database.insert(DatabaseHelper.TABLE_NAME, null, contentValue);
+    }
+
+    public Cursor fetch() {
+        String[] columns = new String[] { DatabaseHelper._ID, DatabaseHelper.MATERIAL, DatabaseHelper.COST, DatabaseHelper.CREATED_AT };
+        Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, columns, null, null, null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+        }
+        return cursor;
+    }
+
+    public Cursor fetchToday(){
+        String[] columns = new String[] { DatabaseHelper._ID, DatabaseHelper.MATERIAL, DatabaseHelper.COST, DatabaseHelper.CREATED_AT };
+
+
+//        long selectedDate = cvDay.getDate();
+//
+//        long selectedDatePlus24= selectedDate + 86400000;
+        Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, columns, DatabaseHelper.CREATED_AT + " BETWEEN ?  AND ?", new String[]{getTodaysDate(" 00:00:00"), getTodaysDate(" 23:59:59")}, null, null, null);
+       try{
+        if (cursor != null && cursor.moveToFirst()) {
+            cursor.moveToFirst();
+        } } catch (SQLException e){
+           System.out.println(e.getMessage());
+       }
+        return cursor;
+
+    }
+
+//    public Cursor fetchToday() {
+////        String[] columns = new String[] { DatabaseHelper._ID, DatabaseHelper.MATERIAL, DatabaseHelper.COST, DatabaseHelper.CREATED_AT };
+////      //  String[] selectArg = {getTodaysDate()};
+////        Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, columns, DatabaseHelper.CREATED_AT + "= "+ getTodaysDate(), null, null, null, null);
+//        Cursor cursor = database.rawQuery("SELECT * FROM "+ DatabaseHelper.TABLE_NAME +
+//                " WHERE " + DatabaseHelper.CREATED_AT +
+//                " BETWEEN ?  AND ?", new String[]{getTodaysDate()+ " 00:00:00", getTodaysDate() + " 11:59:99"});  ;
+//        //Cursor cursor = database.rawQuery(q ,null);
+////        final int materialIndex = cursor.getColumnIndex("material");
+////        final int costIndex = cursor.getColumnIndex("cost");
+//        if (cursor != null && cursor.moveToFirst()) {
+//            cursor.moveToFirst();
+//        } else {
+//            System.out.println(" not found");
+//        }
+//        return cursor;
+//    }
+
+    public int update(long _id, String material, String cost) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DatabaseHelper.MATERIAL, material);
+        contentValues.put(DatabaseHelper.COST, cost);
+        int i = database.update(DatabaseHelper.TABLE_NAME, contentValues, DatabaseHelper._ID + " = " + _id, null);
+        return i;
+    }
+
+    public void delete(long _id) {
+        database.delete(DatabaseHelper.TABLE_NAME, DatabaseHelper._ID + "=" + _id, null);
+    }
+
+}
